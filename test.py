@@ -1,6 +1,12 @@
+#Preconditions:
+# sudo apt-get install python3-lxml
+# sudo apt-get install python3-bs4
+# Nice tutorial: https://www.youtube.com/watch?v=GjKQ6V_ViQE
+
 import bs4 as bs
 import urllib.request
 import sys
+import re
 
 sauce = urllib.request.urlopen("https://bbs.io-tech.fi/forums/myydaeaen.80/").read()
 
@@ -9,6 +15,7 @@ soup = bs.BeautifulSoup(sauce, "lxml")
 thread = soup.find_all("div", class_="structItem-cell structItem-cell--main")
 latest = soup.find_all("div", class_="structItem-cell structItem-cell--latest")
 answers = soup.find_all("div", class_="structItem-cell structItem-cell--meta")
+#example = soup.find_all("p", string=re.compile(("(S|s)ome")))  #Finding all paragraphs with word "Some" or "some"
 
 list = []
 for item in thread:
@@ -24,29 +31,17 @@ for item in thread:
         latest.remove(l)
         break
 
-
-def remove_html_tags(text):
-    """Remove html tags from a string"""
-    import re
-    clean = re.compile('<.*?>')
-    return re.sub(clean, '', text)
-
-
 def parse_content(dict):
+    """"""
     value = dict["content"]
     list = value.find_all("a")
-    # for href in list:
-    #     print(href)
-    # print("---------------------------")
     if len(list) == 4:
         dict = {"status": "NULL", "topic": list[0].text, "url": list[2]["href"],
                 "published": list[2].find_all("time")[0]["datetime"], "category": list[3].text}
     else:
         dict = {"status": list[0].text, "topic": list[1].text, "url": list[3]["href"],
                 "published": list[3].find_all("time")[0]["datetime"], "category": list[4].text}
-
     return dict
-
 
 def parse_answers(dict):
     value = dict["answers"]
@@ -54,13 +49,11 @@ def parse_answers(dict):
     dict = {"answers": list[0].text, "seen": list[1].text}
     return dict
 
-
 def parse_timestamp(dict):
     value = dict["timestamp"]
     list = value.find_all("a")
     dict = {"last_activity": list[0].text}
     return dict
-
 
 def parse(dict):
     dict_content = parse_content(dict)
@@ -70,7 +63,6 @@ def parse(dict):
     spesific_infomation_dict = get_information(result_dict)
     new_result_dict = {**result_dict, **spesific_infomation_dict}
     return new_result_dict
-
 
 def get_information(dict):
     url = "https://bbs.io-tech.fi{}".format(dict["url"])
@@ -95,29 +87,6 @@ def get_information(dict):
                     print(line)
                     print("Unexpected error: {}".format(sys.exc_info()[0]))
     return temp_dict
-# if "Myytävä tuote" in line:
-#     try:
-#         temp_dict["product"] = line.split(":")[1]
-#     except:
-#         print("Unexpected error: {}".format(sys.exc_info()[0]))
-#     continue
-# if "Hinta" in line:
-#     print(line)
-#     temp_dict["price"] = line.split(":")[1]
-# if "Paikkakunta" in line:
-#     try:
-#         temp_dict["location"] = line.split(":")[1]
-#     except:
-#         print("Unexpected error: {}".format(sys.exc_info()[0]))
-# if "Toimitustapa" in line:
-#     temp_dict["delivery_method"] = line.split(":")[1]
-# if "Kuitti löytyy" in line:
-#     temp_dict["receipt_found"] = line.split(":")[1]
-# if "Tuote ostettu" in line:
-#     temp_dict["purchase_day"] = line.split(":")[1]
-# if "Muuta huomioitavaa" in line:
-#     temp_dict["other"] = line.split(":")[1]
-#     return temp_dict
 
 final = parse(list[0])
 
@@ -129,4 +98,3 @@ for dict in list:
 for item in final_list:
     print(item)
 
-# get_information(final_list[0])
