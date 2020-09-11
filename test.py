@@ -7,6 +7,9 @@ import bs4 as bs
 import urllib.request
 import sys
 import re
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 
 sauce = urllib.request.urlopen("https://bbs.io-tech.fi/forums/myydaeaen.80/").read()
 
@@ -16,6 +19,24 @@ thread = soup.find_all("div", class_="structItem-cell structItem-cell--main")
 latest = soup.find_all("div", class_="structItem-cell structItem-cell--latest")
 answers = soup.find_all("div", class_="structItem-cell structItem-cell--meta")
 #example = soup.find_all("p", string=re.compile(("(S|s)ome")))  #Finding all paragraphs with word "Some" or "some"
+
+# Use a service account
+cred = credentials.Certificate('key.json')
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+# cities_ref = db.collection(u'testi')
+# docs = cities_ref.where(u'testiarray', "array_contains", u'b').get()
+# print(type(docs))
+# print(docs)
+# for doc in docs:
+#     print(f'{doc.id} => {doc.to_dict()}')
+
+# doc_ref = db.collection("testi").document("testidoku2")
+# testidict = {}
+# testidict["testiarray"] = ["q","b","ww","ee","rr"]
+# testidict["testistring"] = "kissa"
+# doc_ref.set(testidict)
 
 list = []
 for item in thread:
@@ -88,13 +109,22 @@ def get_information(dict):
                     print("Unexpected error: {}".format(sys.exc_info()[0]))
     return temp_dict
 
+def create_keywords(dict):
+    temp_list = []
+    return temp_list
+
 final = parse(list[0])
 
 final_list = []
 for dict in list:
     temp_dict = parse(dict)
     final_list.append(temp_dict)
+    keywords = create_keywords(dict)
 
-for item in final_list:
-    print(item)
+# for item in final_list:
+#     category = item["category"]
+#     published = item["published"]
+#     doc_ref = db.collection("iotech-{}".format(category)).document(published)
+#     doc_ref.set(item)
+#     print(item)
 
