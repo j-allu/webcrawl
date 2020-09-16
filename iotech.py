@@ -1,7 +1,7 @@
 #Preconditions:
-# sudo apt-get install python3-lxml
-# sudo apt-get install python3-bs4
-# Nice tutorial: https://www.youtube.com/watch?v=GjKQ6V_ViQE
+# sudo apt-get install python3-lxml / python3 -m pip --upgrade lxml
+# sudo apt-get install python3-bs4 / python3 -m pip --upgrade beautifulsoup4
+# python3 -m pip --upgrade firebase-admin
 
 import bs4 as bs
 import urllib.request
@@ -134,6 +134,14 @@ answers = soup.find_all("div", class_="structItem-cell structItem-cell--meta")  
 #example = soup.find_all("p", string=re.compile(("(S|s)ome")))  #Finding all paragraphs with word "Some" or "some"
 
 list_of_dicts = []
+
+#Remove all but messages within last hour
+count_today = sum('tänään' in s.text for s in latest)
+count_yesterday = sum("eilen" in s.text for s in latest)
+total = count_today + count_yesterday
+thread = thread[:len(thread)-total]
+answers = answers[:len(answers)-total]
+latest = latest[:len(latest)-total]
 
 #Going through each of lists (thread, latest and answers) and combining them to dictionary. Storing these dictionaries to list_of_dicts variable.
 for item in thread:
